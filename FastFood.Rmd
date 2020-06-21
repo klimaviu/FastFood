@@ -153,7 +153,7 @@ You know what *is* linked to cardiovascular disease, though?
 
 Guidelines recommend that people limit the calories from saturated and trans fats to no more than 10% of their caloric intake.
 
-```{r}
+```{r, fig.width = 10, fig.height= 7}
 
 max_sat_fat_numbers <- fastfood %>% 
   group_by(restaurant) %>% 
@@ -208,7 +208,7 @@ max_sodium_items %>%
 
 Arby's takes the lead, with McDonald's coming in second.
 
-```{r}
+```{r, fig.width = 10, fig.height= 7}
 
 fastfood %>% 
   group_by(restaurant) %>% 
@@ -227,7 +227,7 @@ fastfood %>%
 
 McDonald's is the winner here. For us Lithuanians, Subway seems like a somewhat healthier alternative.
 
-```{r}
+```{r, fig.width = 10, fig.height= 7}
 
 fastfood %>% 
   group_by(restaurant) %>% 
@@ -258,7 +258,7 @@ fastfood <- fastfood %>%
 
 Foods that offer the most protein per calorie:
 
-```{r}
+```{r, fig.width = 10, fig.height= 7}
 
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
@@ -316,7 +316,7 @@ max_ftc_items %>%
 
 The top 10 items highest in calories for both brands: McDonald's takes 6 of these.
 
-```{r, fig.width= 8}
+```{r, fig.width = 10, fig.height= 7}
 
 litbrands <- fastfood %>% 
   filter(restaurant %in% c("Mcdonalds", "Burger King"))
@@ -337,7 +337,7 @@ litbrands %>%
 
 When we look at the top 10 items for both brands ranked by the protein-to-calorie ratio, McDonald's takes an obvious lead, claiming eight of the places.
 
-```{r, fig.width= 8}
+```{r, fig.width = 10, fig.height= 7}
 
 litbrands %>% 
   group_by(restaurant) %>% 
@@ -358,7 +358,7 @@ What if we looked at protein only, disregarding the calories?
 
 Even if you're not aiming to maintain a caloric deficit, McDonald's is still superior when it comes to offering high-protein items.
 
-```{r, fig.width= 8}
+```{r, fig.width = 10, fig.height= 7}
 litbrands %>% 
   group_by(restaurant) %>% 
   arrange(desc(protein)) %>% 
