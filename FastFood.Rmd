@@ -1,0 +1,255 @@
+---
+title: "FastFood"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, error = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r, echo = FALSE}
+
+library(readr)
+library(ggplot2)
+library(tidyr)
+library(tidyverse)
+library(dplyr)
+library(wesanderson)
+library(ggthemes)
+
+fastfood <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2018/2018-09-04/fastfood_calories.csv')
+theme_set(theme_solarized())
+
+
+```
+
+# Brands by item count:
+
+```{r, fig.width = 10, fig.height= 7}
+fastfood %>% 
+  group_by(restaurant) %>% 
+  summarise(total_items = sum(n())) %>% 
+  ggplot()+
+  geom_col(aes(reorder(restaurant, total_items), total_items, fill = restaurant),
+           show.legend = FALSE, color = "black")+
+  labs(x ="Restaurant",
+       y ="Total item count")+
+  scale_fill_manual(values = wes_palette("Zissou1", type = "continuous", n = 8))
+```
+
+# Highest calorie item per brand:
+
+```{r, fig.width = 10, fig.height= 7}
+max_cal_numbers <- fastfood %>% 
+  group_by(restaurant) %>% 
+  summarise(max_cal = max(calories))
+
+max_cal_items <- fastfood %>% 
+  inner_join(max_cal_numbers,
+             by = c("calories" = "max_cal",
+                    "restaurant"))
+
+max_cal_items %>% 
+  ggplot(aes(restaurant, calories))+
+  geom_col(aes(fill = restaurant),
+           show.legend = FALSE, color = "black")+
+  geom_label(aes(label = item),
+             label.size = 0.05,
+             label.padding = unit(0.2, "lines"))+
+  scale_fill_tableau("Classic Cyclic")
+
+```
+
+# Lowest calorie item per brand:
+
+```{r, fig.width = 10, fig.height= 7}
+min_cal_numbers <- fastfood %>% 
+  group_by(restaurant) %>% 
+  summarise(min_cal = min(calories))
+
+min_cal_items <- fastfood %>% 
+  inner_join(min_cal_numbers,
+             by = c("calories" = "min_cal",
+                    "restaurant"))
+
+min_cal_items %>% 
+  ggplot(aes(restaurant, calories))+
+  geom_col(aes(fill = restaurant),
+           show.legend = FALSE, color = "black")+
+  geom_label(aes(label = item),
+             label.size = 0.05,
+             label.padding = unit(0.2, "lines"))
+```
+
+# Items highest in cholesterol:
+
+```{r, fig.width = 10, fig.height= 7}
+
+max_cholesterol_numbers <- fastfood %>% 
+  group_by(restaurant) %>% 
+  summarise(max_cholesterol = max(cholesterol))
+
+max_cholesterol_items <- fastfood %>% 
+  inner_join(max_cholesterol_numbers,
+             by = c("cholesterol" = "max_cholesterol",
+                    "restaurant"))
+
+max_cholesterol_items %>% 
+  ggplot(aes(restaurant, cholesterol))+
+  geom_col(aes(fill = restaurant),
+           show.legend = FALSE, color = "black")+
+  geom_label(aes(label = item),
+             label.size = 0.05,
+             label.padding = unit(0.2, "lines"))+
+  scale_fill_manual(values = wes_palette("Darjeeling1", type = "continuous", n = 8))
+
+```
+
+# Items highest in sodium:
+
+```{r, fig.width = 10, fig.height= 7}
+
+max_sodium_numbers <- fastfood %>% 
+  group_by(restaurant) %>% 
+  summarise(max_sodium = max(sodium))
+
+max_sodium_items <- fastfood %>% 
+  inner_join(max_sodium_numbers,
+             by = c("sodium" = "max_sodium",
+                    "restaurant"))
+
+max_sodium_items %>% 
+  ggplot(aes(restaurant, sodium))+
+  geom_col(aes(fill = restaurant),
+           show.legend = FALSE, color = "black")+
+  geom_label(aes(label = item),
+             label.size = 0.05,
+             label.padding = unit(0.2, "lines"))+
+  scale_fill_tableau("Classic Cyclic")
+
+```
+
+# Average calories per item per brand:
+
+```{r}
+
+fastfood %>% 
+  group_by(restaurant) %>% 
+  summarise(mean_calories = mean(calories)) %>% 
+  ggplot()+
+  geom_col(aes(reorder(restaurant, mean_calories), mean_calories, fill = restaurant),
+           show.legend = FALSE, color = "black")+
+  labs(x = "Brand",
+       y = "Average calories per item")+
+  coord_flip()
+```
+
+# Let's introduce a couple of ratios: protein-to-calories and fiber-to-total-carbs
+
+```{r, echo=TRUE}
+
+fastfood <- fastfood %>% 
+  mutate(
+    protein_to_calorie = protein/calories,
+    fiber_to_carb = fiber/total_carb
+  )
+
+```
+
+Foods that offer the most protein per calorie:
+
+```{r}
+
+'%!in%' <- function(x,y)!('%in%'(x,y))
+
+max_ptc_numbers <- fastfood %>%
+  group_by(restaurant) %>% 
+  summarise(max_ptc = max(protein_to_calorie))
+
+max_ptc_items <- fastfood %>% 
+  inner_join(max_ptc_numbers,
+             by = c("protein_to_calorie" = "max_ptc",
+                    "restaurant"))
+
+max_ptc_items %>% 
+  filter(restaurant %!in% c("Burger King")) %>% 
+  ggplot(aes(restaurant, protein_to_calorie))+
+  geom_col(aes(fill = restaurant),
+           show.legend = FALSE, color = "black")+
+  geom_label(aes(label = item),
+             label.size = 0.05,
+             label.padding = unit(0.2, "lines"))+
+  scale_fill_tableau("Classic Cyclic")+
+  labs(x = "Brand",
+       y = "Protein to calorie ratio")
+
+```
+
+Foods with the highest fiber-to-carbohydrate ratio:
+
+```{r}
+
+max_ftc_numbers <- fastfood %>%
+  group_by(restaurant) %>% 
+  summarise(max_ftc = max(fiber_to_carb))
+
+max_ftc_items <- fastfood %>% 
+  inner_join(max_ftc_numbers,
+             by = c("fiber_to_carb" = "max_ftc",
+                    "restaurant"))
+
+max_ftc_items %>% 
+  filter(restaurant %in% c("Sonic", "Subway", "Mcdonalds")) %>% 
+  ggplot(aes(restaurant, fiber_to_carb))+
+  geom_col(aes(fill = restaurant),
+           show.legend = FALSE, color = "black")+
+  geom_label(aes(label = item),
+             label.size = 0.05,
+             label.padding = unit(0.2, "lines"))+
+  scale_fill_tableau("Classic Cyclic")+
+  labs(x = "Brand",
+       y = "Fiber to carbohydrate ratio")
+
+```
+
+# A closer look into the brands available (or soon-to-be-available) in Lithuania:
+
+That would be McDonald's, Subway and Burger King.
+
+```{r}
+
+litbrands <- fastfood %>% 
+  filter(restaurant %in% c("Mcdonalds", "Subway", "Burger King"))
+
+```
+
+# Looking at the McDonald's highest protein-to-calorie item:
+
+```{r}
+
+m <- fastfood %>% 
+  filter(X1 == 53)%>%
+  select(-c(X1, restaurant, salad)) %>% 
+  pivot_longer(cols = -item,
+               names_to = "nutrient",
+               values_to = "quantity"
+               )
+
+m %>% 
+  filter(nutrient %in% c("protein", "total_fat", "total_carb")) %>% 
+  mutate(nutrient = factor(nutrient),
+         nutrient = fct_recode(nutrient,
+           `Protein` = "protein",
+           `Total Fat` = "total_fat",
+           `Total Carbohydrates` = "total_carb"
+         )) %>% 
+  ggplot(aes(x = "", y = quantity, fill = nutrient))+
+  geom_bar(width = 1, stat = "identity",
+           color = "black")+
+  coord_polar("y", start=0)+
+  theme_void()+
+  scale_fill_manual(values = wes_palette("Darjeeling1", n = 3))+
+  ylab("Composition of the Premium Bacon Ranch Salad")+
+  theme(panel.background = element_rect(fill = "#fff2cf", color = "#fff2cf"))
+
+```
